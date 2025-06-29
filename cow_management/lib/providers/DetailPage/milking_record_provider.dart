@@ -12,7 +12,7 @@ class MilkingRecordProvider with ChangeNotifier {
   Future<void> fetchRecords(String cowId, String token,
       {int limit = 50}) async {
     try {
-      final url = '$baseUrl/records/milking/recent';
+      final url = '$baseUrl/records/cow/$cowId/milking-records';
       print('🛰️ 요청 URL: $url');
       print('🐮 cowId: $cowId');
       print('🪪 토큰: $token');
@@ -30,42 +30,46 @@ class MilkingRecordProvider with ChangeNotifier {
         _records.clear();
 
         for (var json in data) {
-          if (json['cow_id'] == cowId) {
-            _records.add(MilkingRecord.fromJson(json));
-          }
+          _records.add(MilkingRecord.fromJson(json));
         }
 
         notifyListeners();
       }
     } catch (e) {
       print('❌ 에러 전체 출력: $e');
-      throw Exception('📦 소별 최근 기록 불러오기 실패: $e');
+      throw Exception('📦 착유 기록 불러오기 실패: $e');
     }
   }
 
   Future<void> addRecord(MilkingRecord record, String token) async {
+    final data = record.toJson();
+    if (!data.containsKey('cow_id') || data['cow_id'] == null) {
+      print('❌ cow_id가 누락되었습니다.');
+      throw Exception('cow_id가 누락되었습니다.');
+    }
+
     try {
-      final body = {
-        'record_type': 'milking',
-        'cow_id': record.cowId,
-        'record_date': record.recordDate,
-        'record_data': record.toJson(), // 측정값들은 이 안에!
-      };
+      print('🔄 착유 기록 추가 시작: $baseUrl/records/milking');
+      print('📄 전송 데이터: $data');
 
       final response = await _dio.post(
         '$baseUrl/records/milking',
-        data: body,
+        data: data,
         options: Options(headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         }),
       );
 
+      print('✅ 착유 기록 추가 응답: ${response.statusCode}');
+      print('📄 응답 데이터: ${response.data}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         _records.add(record);
         notifyListeners();
       }
     } catch (e) {
+      print('❌ 착유 기록 추가 실패: $e');
       throw Exception('착유 기록 추가 실패: $e');
     }
   }

@@ -72,25 +72,27 @@ class EstrusRecordProvider with ChangeNotifier {
 
     if (baseUrl == null) return false;
 
-    try {
-      final requestData = {
-        'cow_id': record.cowId,
-        'record_date': record.recordDate,
-        'title': '발정 기록',
-        'description':
-            record.notes?.isNotEmpty == true ? record.notes : '발정 발견',
-        'record_data': record.toJson(),
-      };
+    final data = record.toJson();
+    if (!data.containsKey('cow_id') || data['cow_id'] == null) {
+      print('❌ cow_id가 누락되었습니다.');
+      return false;
+    }
 
-      print('🔄 발정 기록 저장 요청: $requestData');
+    try {
+      print('🔄 발정 기록 추가 시작: $baseUrl/records/estrus');
+      print('📄 전송 데이터: $data');
 
       final response = await dio.post(
         '$baseUrl/records/estrus',
-        data: record.toJson(),
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: data,
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
       );
 
-      print('✅ 발정 기록 저장 응답: ${response.statusCode}');
+      print('✅ 발정 기록 추가 응답: ${response.statusCode}');
+      print('📄 응답 데이터: ${response.data}');
 
       if (response.statusCode == 201) {
         _records.add(EstrusRecord.fromJson(response.data));

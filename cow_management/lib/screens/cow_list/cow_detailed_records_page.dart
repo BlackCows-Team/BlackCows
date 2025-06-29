@@ -56,31 +56,57 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
         throw Exception('로그인이 필요합니다.');
       }
 
+      final url = '$_baseUrl/records/cow/${widget.cow.id}/all-records';
+      print('🔄 상세기록 조회 시작: $url');
+      print('🐮 젖소 ID: ${widget.cow.id}');
+      print('🪪 토큰: ${token.substring(0, 20)}...');
+
       final response = await http.get(
-        Uri.parse('$_baseUrl/records/cow/${widget.cow.id}/all-records'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
+      print('✅ 응답 상태 코드: ${response.statusCode}');
+      print('📄 응답 데이터: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
           setState(() {
-            _detailedRecords = data['records'] ?? [];
+            // 응답이 리스트인지 객체인지 확인
+            if (data is List) {
+              _detailedRecords = data;
+            } else if (data is Map && data['records'] != null) {
+              _detailedRecords = data['records'];
+            } else {
+              _detailedRecords = [];
+            }
             _isLoading = false;
           });
+          print('📊 로드된 기록 수: ${_detailedRecords.length}');
+        }
+      } else if (response.statusCode == 404) {
+        // 기록이 없는 경우
+        if (mounted) {
+          setState(() {
+            _detailedRecords = [];
+            _isLoading = false;
+          });
+          print('📭 해당 젖소의 기록이 없습니다.');
         }
       } else {
-        throw Exception('기록을 불러오는데 실패했습니다.');
+        throw Exception('기록을 불러오는데 실패했습니다. 상태코드: ${response.statusCode}');
       }
     } catch (e) {
       if (mounted) {
         setState(() {
+          _detailedRecords = [];
           _isLoading = false;
         });
-        print('Error fetching detailed records: $e');
+        print('❌ 상세기록 조회 오류: $e');
       }
     }
   }
@@ -224,7 +250,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.blue,
             emoji: '🏥',
             description: '정기 건강검진 및 체크업 기록',
-            onViewPressed: () => _navigateToList('/health-check/list'),
+            onViewPressed: () => _navigateToList('/health-check-records'),
             onAddPressed: () => _navigateToAdd('/health-check/add'),
             recordType: 'health-check',
           ),
@@ -235,7 +261,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.green,
             emoji: '💉',
             description: '백신 접종 일정 및 이력 관리',
-            onViewPressed: () => _navigateToList('/vaccination/list'),
+            onViewPressed: () => _navigateToList('/vaccination-records'),
             onAddPressed: () => _navigateToAdd('/vaccination/add'),
             recordType: 'vaccination',
           ),
@@ -246,8 +272,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.orange,
             emoji: '⚖️',
             description: '체중 변화 추이 및 성장 기록',
-            onViewPressed: () => _navigateToList('/weight/list'),
-            onAddPressed: () => _navigateToAdd('/weight/add'),
+            onViewPressed: () => _navigateToList('/weight-records'),
+            onAddPressed: () => _navigateToAdd('/weight-record/add'),
             recordType: 'weight',
           ),
           const SizedBox(height: 16),
@@ -257,7 +283,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.red,
             emoji: '🩺',
             description: '질병 치료 및 처방 기록',
-            onViewPressed: () => _navigateToList('/treatment/list'),
+            onViewPressed: () => _navigateToList('/treatment-records'),
             onAddPressed: () => _navigateToAdd('/treatment/add'),
             recordType: 'treatment',
           ),
@@ -277,8 +303,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.pink,
             emoji: '💕',
             description: '발정 주기 및 행동 관찰 기록',
-            onViewPressed: () => _navigateToList('/estrus-record/list'),
-            onAddPressed: () => _navigateToAdd('/estrus-record/add'),
+            onViewPressed: () => _navigateToList('/breeding-records'),
+            onAddPressed: () => _navigateToAdd('/estrus/add'),
             recordType: 'estrus',
           ),
           const SizedBox(height: 16),
@@ -288,8 +314,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.blue,
             emoji: '🎯',
             description: '인공수정 실시 및 결과 기록',
-            onViewPressed: () => _navigateToList('/insemination-record/list'),
-            onAddPressed: () => _navigateToAdd('/insemination-record/add'),
+            onViewPressed: () => _navigateToList('/breeding-records'),
+            onAddPressed: () => _navigateToAdd('/insemination/add'),
             recordType: 'insemination',
           ),
           const SizedBox(height: 16),
@@ -299,7 +325,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.purple,
             emoji: '🤱',
             description: '임신 확인 및 감정 결과',
-            onViewPressed: () => _navigateToList('/pregnancy-check/list'),
+            onViewPressed: () => _navigateToList('/breeding-records'),
             onAddPressed: () => _navigateToAdd('/pregnancy-check/add'),
             recordType: 'pregnancy-check',
           ),
@@ -310,8 +336,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.teal,
             emoji: '👶',
             description: '분만 과정 및 송아지 정보',
-            onViewPressed: () => _navigateToList('/calving-record/list'),
-            onAddPressed: () => _navigateToAdd('/calving-record/add'),
+            onViewPressed: () => _navigateToList('/breeding-records'),
+            onAddPressed: () => _navigateToAdd('/breeding/add'),
             recordType: 'calving',
           ),
         ],
@@ -330,7 +356,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             color: Colors.brown,
             emoji: '🌾',
             description: '사료 종류, 급여량 및 시간 기록',
-            onViewPressed: () => _navigateToList('/feeding-record/list'),
+            onViewPressed: () => _navigateToList('/feeding-records'),
             onAddPressed: () => _navigateToAdd('/feeding-record/add'),
             recordType: 'feed',
           ),
@@ -342,7 +368,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             emoji: '🥛',
             description: '착유량, 유성분 및 품질 기록',
             onViewPressed: () => _navigateToList('/milking-records'),
-            onAddPressed: () => _navigateToAdd('/milking-record-add'),
+            onAddPressed: () => _navigateToAdd('/milking-record/add'),
             recordType: 'milking',
           ),
         ],

@@ -19,7 +19,7 @@ class HealthCheckProvider with ChangeNotifier {
     }
 
     try {
-      print('요청 데이터: $baseUrl/records/cow/$cowId/health-records');
+      print('🔄 건강검진 기록 조회 시작: $baseUrl/records/cow/$cowId/health-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -108,11 +108,18 @@ class HealthCheckProvider with ChangeNotifier {
 
     if (baseUrl == null) return false;
 
+    final data = record.toJson();
+    if (!data.containsKey('cow_id') || data['cow_id'] == null) {
+      print('❌ cow_id가 누락되었습니다.');
+      return false;
+    }
+
     try {
-      print('요청 데이터: $baseUrl/records/health-check');
+      print('🔄 건강검진 기록 추가 시작: $baseUrl/records/health-check');
+      print('📄 전송 데이터: $data');
       final response = await dio.post(
         '$baseUrl/records/health-check',
-        data: record.toJson(), // 여기로 수정!
+        data: data,
         options: Options(headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -125,7 +132,7 @@ class HealthCheckProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      print('건강검진 기록 추가 오류: $e');
+      print('❌ 건강검진 기록 추가 오류: $e');
     }
     return false;
   }

@@ -171,11 +171,15 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
     };
 
     try {
+      print('🔄 착유 기록 추가 시작: $apiUrl/records/milking');
+      print('📄 전송 데이터: $body');
       final response = await dio.post(
         "$apiUrl/records/milking",
         data: body,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
+      print('✅ 착유 기록 추가 응답: ${response.statusCode}');
+      print('📄 응답 데이터: ${response.data}');
       
       setState(() {
         _isLoading = false;

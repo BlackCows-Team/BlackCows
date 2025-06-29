@@ -15,14 +15,16 @@ class CalvingRecordProvider with ChangeNotifier {
     if (baseUrl == null) return [];
 
     try {
-      print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
+      print('🔄 분만 기록 조회 시작: $baseUrl/records/cow/$cowId/breeding-records?record_type=calving');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/breeding-records',
+        queryParameters: {'record_type': 'calving'},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
-        print('응답: $response');
+        print('✅ 분만 기록 조회 성공: ${response.statusCode}');
+        print('응답: ${response.data}');
         final List<dynamic> data = response.data;
 
         final calvingRecords = data
@@ -63,18 +65,26 @@ class CalvingRecordProvider with ChangeNotifier {
 
     if (baseUrl == null) return false;
 
+    final data = record.toJson();
+    if (!data.containsKey('cow_id') || data['cow_id'] == null) {
+      print('❌ cow_id가 누락되었습니다.');
+      return false;
+    }
+
     try {
-      print('요청 데이터: $baseUrl/records/calving');
+      print('🔄 분만 기록 추가 시작: $baseUrl/records/calving');
+      print('📄 전송 데이터: $data');
       final response = await dio.post(
         '$baseUrl/records/calving',
-        data: record.toJson(),
+        data: data,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      print('응답: $response');
+      print('✅ 분만 기록 추가 응답: ${response.statusCode}');
+      print('응답: ${response.data}');
       return response.statusCode == 201;
     } catch (e) {
-      print('분만 기록 생성 실패: $e');
+      print('❌ 분만 기록 생성 실패: $e');
       return false;
     }
   }

@@ -18,7 +18,7 @@ class WeightRecordProvider with ChangeNotifier {
     }
 
     try {
-      print('요청 데이터: $baseUrl/records/cow/$cowId/weight-records');
+      print('🔄 체중 기록 조회 시작: $baseUrl/records/cow/$cowId/weight-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/weight-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -77,11 +77,18 @@ class WeightRecordProvider with ChangeNotifier {
 
     if (baseUrl == null) return false;
 
+    final data = record.toJson();
+    if (!data.containsKey('cow_id') || data['cow_id'] == null) {
+      print('❌ cow_id가 누락되었습니다.');
+      return false;
+    }
+
     try {
-      print('요청 데이터: $baseUrl/records/weight');
+      print('🔄 체중 기록 추가 시작: $baseUrl/records/weight');
+      print('📄 전송 데이터: $data');
       final response = await dio.post(
         '$baseUrl/records/weight',
-        data: record.toJson(), // ✅ 통일된 toJson 사용
+        data: data,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',

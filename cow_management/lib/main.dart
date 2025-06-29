@@ -52,24 +52,48 @@ import 'screens/ai_chatbot/app_wrapper.dart';
 import 'screens/ai_chatbot/chatbot_history_page.dart';
 import 'screens/ai_analysis/analysis_page.dart';
 
+// 상세기록 추가 페이지들 import
+import 'screens/cow_list/Cow_Detail/Milk/milk_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Weight/weight_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Feeding/feeding_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Health/health_check_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Treatment/treatment_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Vaccination/vaccination_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Insemination/insemination_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Estrus/estrus_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_add_page.dart';
+
+// 상세기록 목록 페이지들 import
+import 'screens/cow_list/Cow_Detail/Milk/milk_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Weight/weight_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Health/health_check_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Treatment/treatment_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Vaccination/vaccination_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Breeding/breeding_list_page.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 웹 환경에서도 dotenv.load()를 반드시 호출해야 함
-  // 웹: web/.env 파일 필요, 모바일/데스크탑: assets/config/.env 사용
-  if (kIsWeb) {
-    await dotenv.load(); // web/.env 파일 사용
-  } else {
+  // 환경 변수 로드
+  try {
     await dotenv.load(fileName: "assets/config/.env");
+    print('환경 변수 로드 성공: ${dotenv.env}');
+  } catch (e) {
+    print('환경 변수 로드 실패: $e');
+    // 기본값 설정
+    dotenv.env['API_BASE_URL'] = 'http://localhost:8000';
+    dotenv.env['KAKAO_NATIVE_APP_KEY'] = '40bba826862b5b1107aec5179bdbcb81';
   }
 
-  // Windows가 아니면 Firebase 초기화
-  if (!kIsWeb && !Platform.isWindows) {
-    try {
+  // Firebase 초기화 (웹 포함)
+  try {
+    if (kIsWeb || !Platform.isWindows) {
       await Firebase.initializeApp();
-    } catch (e) {
-      print('Firebase 초기화 실패: $e');
     }
+  } catch (e) {
+    print('Firebase 초기화 실패: $e');
   }
 
   // Kakao SDK도 Windows에서 실행하지 않음
@@ -315,6 +339,129 @@ class SoDamApp extends StatelessWidget {
             },
             '/notifications': (context) => const NotificationPage(),
             '/todo': (context) => const TodoPage(),
+            
+            // 상세기록 추가 페이지들
+            '/milking-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return MilkingRecordPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/feeding-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return FeedingRecordAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/weight-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return WeightAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/health-check/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return HealthCheckAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/treatment/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return TreatmentAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/vaccination/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return VaccinationAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/breeding/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return BreedingRecordAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/insemination/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return InseminationRecordAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/estrus/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return EstrusAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/pregnancy-check/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return PregnancyCheckAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            
+            // 상세기록 목록 페이지들
+            '/milking-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return MilkingRecordListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/feeding-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return FeedingRecordListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/weight-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return WeightListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/health-check-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return HealthCheckListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/treatment-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return TreatmentListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/vaccination-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return VaccinationListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/breeding-records': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+              return BreedingRecordListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
           },
         );
       },
